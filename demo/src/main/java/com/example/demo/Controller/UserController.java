@@ -30,7 +30,7 @@ public class UserController {
 
   @PostMapping
   public User create(@RequestBody User user) {
-    // TODO: process POST request
+    
 
     return userRepository.save(user);
   }
@@ -47,7 +47,7 @@ public class UserController {
 
   @PutMapping("/{appName}")
   public User update(@PathVariable String appName, @RequestBody User user) {
-    // TODO: process PUT request
+  
     user.setAppName(appName);
     return userRepository.save(user);
   }
