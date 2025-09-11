@@ -11,7 +11,7 @@ function App() {
   const [form, setForm] = useState({ appName: "", email: "", password: "" });
   const [showPasswords, setShowPasswords] = useState({});
   const [sortDirection, setSortDirection] = useState('asc');
-  const API_URL = "http://localhost:8081/api/users";
+  const API_URL = "https://credsentry-3.onrender.com/api/users";
 
   useEffect(() => { fetchUsers(); }, []);
   const fetchUsers = async () => {
