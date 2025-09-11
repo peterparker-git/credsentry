@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "http://localhost:5173") // adding react
+@CrossOrigin(origins = {"http://localhost:5173",
+"https://credsentry.vercel.app/"}
+) // adding react
 public class UserController {
   @Autowired
   private UserRepository userRepository;
