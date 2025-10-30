@@ -11,6 +11,8 @@ function App() {
   const [form, setForm] = useState({ appName: "", email: "", password: "" });
   const [showPasswords, setShowPasswords] = useState({});
   const [sortDirection, setSortDirection] = useState('asc');
+  const [editMode, setEditMode] = useState(null);
+  const [editForm, setEditForm] = useState({ appName: "", email: "", password: "" });
   const API_URL = "http://localhost:8081/api/users";
 
   useEffect(() => { fetchUsers(); }, []);
@@ -102,6 +104,31 @@ function App() {
     }));
   };
 
+  const handleEdit = async (appName) => {
+    try {
+      // Create an object with only the modified fields
+      const updates = {};
+      if (editForm.email !== '' && editForm.email !== undefined) {
+        updates.email = editForm.email;
+      }
+      if (editForm.password !== '' && editForm.password !== undefined) {
+        updates.password = editForm.password;
+      }
+
+      // Only make the API call if there are changes
+      if (Object.keys(updates).length > 0) {
+        await axios.put(`${API_URL}/${appName}`, updates);
+        fetchUsers();
+      }
+      
+      setEditMode(null);
+      setEditForm({ appName: "", email: "", password: "" });
+    } catch (error) {
+      console.error("Error updating entry:", error);
+      alert("Failed to update entry");
+    }
+  };
+
   const sortedUsers = [...users].sort((a, b) => {
     const compareAppName = (a.appName || '').toLowerCase().localeCompare((b.appName || '').toLowerCase());
     return sortDirection === 'asc' ? compareAppName : -compareAppName;
@@ -169,33 +196,92 @@ function App() {
             </thead>
             <tbody>
               {sortedUsers.map((u) => (
-                <tr key={u.appName} className="border-b border-white/10 bg-white/85">
+                <tr key={u.appName} className="border-b border-white/10 bg-white/90">
                   <td className="p-3 font-semibold text-[#3b4a4f]">
                     {formatAppName(u.appName) || 'null'}
                   </td>
                   <td className="p-3 text-gray-600">
-                    {u.email || 'null'}
+                    {editMode === u.appName ? (
+                      <input
+                        type="text"
+                        placeholder={u.email}
+                        value={editForm.email}
+                        onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                        className="w-full p-2 rounded border"
+                      />
+                    ) : (
+                      u.email || 'null'
+                    )}
                   </td>
                   <td className="p-3 text-gray-600">
                     <div className="flex items-center gap-2">
-                      <span className="w-32 inline-block">
-                        {showPasswords[u.appName] ? (u.password || 'null') : '••••••••'}
-                      </span>
-                      <button
-                        onClick={() => togglePassword(u.appName)}
-                        className="min-w-[60px] px-2 py-1 text-sm bg-gray-200 rounded-md hover:bg-gray-300"
-                      >
-                        {showPasswords[u.appName] ? 'Hide' : 'Show'}
-                      </button>
+                      {editMode === u.appName ? (
+                        <input
+                          type="text"
+                          placeholder="Enter new password"
+                          value={editForm.password}
+                          onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
+                          className="w-full p-2 rounded border"
+                        />
+                      ) : (
+                        <>
+                          <span className="w-32 inline-block">
+                            {showPasswords[u.appName] ? (u.password || 'null') : '••••••••'}
+                          </span>
+                          <button
+                            onClick={() => togglePassword(u.appName)}
+                            className="min-w-[60px] px-2 py-1 text-sm bg-gray-200 rounded-md hover:bg-gray-300"
+                          >
+                            {showPasswords[u.appName] ? 'Hide' : 'Show'}
+                          </button>
+                        </>
+                      )}
                     </div>
                   </td>
                   <td className="p-3">
-                    <button
-                      onClick={() => handleDelete(u.appName)}
-                      className="bg-[#ee7d18] text-white px-4 py-2 rounded-md"
-                    >
-                      Delete
-                    </button>
+                    <div className="flex gap-2">
+                      {editMode === u.appName ? (
+                        <>
+                          <button
+                            onClick={() => handleEdit(u.appName)}
+                            className="bg-green-500 text-white px-4 py-2 rounded-md"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={() => {
+                              setEditMode(null);
+                              setEditForm({ appName: "", email: "", password: "" });
+                            }}
+                            className="bg-gray-500 text-white px-4 py-2 rounded-md"
+                          >
+                            Cancel
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => {
+                              setEditMode(u.appName);
+                              setEditForm({
+                                appName: u.appName,
+                                email: u.email,
+                                password: u.password
+                              });
+                            }}
+                            className="bg-[#831638] text-white px-4 py-2 rounded-md"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(u.appName)}
+                            className="bg-[#ee7d18] text-white px-4 py-2 rounded-md"
+                          >
+                            Delete
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
